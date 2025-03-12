@@ -1,5 +1,5 @@
 # Learning L1 Norms Weights For Convolutional Synthesis-based Regularization
-Learning spatially adaptive L1 norm weights for convolutional synthesis-based regularization using algorithm unrolling.
+Learning spatially adaptive L1 norms weights for convolutional synthesis-based regularization using algorithm unrolling.
 
 <img src="approach.png" width="120%"/>
 
