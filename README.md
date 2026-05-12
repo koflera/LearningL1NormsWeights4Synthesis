@@ -1,6 +1,6 @@
 # Learning L1 Norms Weights For Convolutional Synthesis-based Regularization
 Learning spatially adaptive L1 norms weights for convolutional synthesis-based regularization using algorithm unrolling.
 
-<img src="approach.png" width="120%"/>
+<img src="images/approach.png" width="120%"/>
 
 We are currently working on integrating all necessary building blocks for the proposed approach into [MRpro](https://github.com/ckolbPTB/mrpro), after which you will find code to apply the method to MR image reconstruction problems.
