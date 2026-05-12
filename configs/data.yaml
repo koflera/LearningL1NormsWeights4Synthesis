@@ -1,0 +1,13 @@
+# the directory containing all .h5 files
+data_dir:
+  /your/path/to/the/h5/files/
+
+# the directory containing the .txt files of the splits; 
+# "fastMRI_training.txt", "fastMRI_validation.txt" and "fastMRI_testing.txt"
+split_dir:
+  /your/path/to/the/fastMRI/split/files
+
+# the directory containing the convolutional dictionary filters as .pt files
+conv_dictionary_dir:
+  /your/path/to/the/convolutional/dictionary/filters
+
