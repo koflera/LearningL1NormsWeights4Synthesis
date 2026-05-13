@@ -76,32 +76,32 @@ def train_model(
         validation_loss_sum = 0.0
         validation_n_samples = 0
 
-        # with torch.no_grad():
-        for batch in tqdm(
-            validation_loader,
-            desc="evaluation loop",
-            position=1,
-            leave=False,
-            disable=False,
-        ):
-            kdata = batch["kdata"].to(device)
-            adjoint = batch["adjoint"].to(device)
-            mask = batch["mask"].to(device)
-            target = batch["target"].to(device)
+        with torch.no_grad():
+            for batch in tqdm(
+                validation_loader,
+                desc="evaluation loop",
+                position=1,
+                leave=False,
+                disable=False,
+            ):
+                kdata = batch["kdata"].to(device)
+                adjoint = batch["adjoint"].to(device)
+                mask = batch["mask"].to(device)
+                target = batch["target"].to(device)
 
-            mask_operator = mrpro.operators.CartesianMaskingOp(mask)
+                mask_operator = mrpro.operators.CartesianMaskingOp(mask)
 
-            recon = model(adjoint, kdata, mask_operator)
-            loss = loss_function(
-                torch.view_as_real(recon),
-                torch.view_as_real(target),
-            )
+                recon = model(adjoint, kdata, mask_operator)
+                loss = loss_function(
+                    torch.view_as_real(recon),
+                    torch.view_as_real(target),
+                )
 
-            batch_size = target.shape[0]
-            validation_loss_sum += loss.item() * batch_size
-            validation_n_samples += batch_size
+                batch_size = target.shape[0]
+                validation_loss_sum += loss.item() * batch_size
+                validation_n_samples += batch_size
 
-        validation_loss = validation_loss_sum / validation_n_samples
+            validation_loss = validation_loss_sum / validation_n_samples
 
         if use_wandb:
             wandb.log({"validation-loss": validation_loss}, step=epoch + 1)
