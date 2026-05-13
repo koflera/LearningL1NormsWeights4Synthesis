@@ -82,7 +82,7 @@ class LowFieldMRDataset(torch.utils.data.Dataset):
         }
 
 
-def sample_parameter(spec: int | float | tuple | list, generator: torch.GeneratorT):
+def sample_parameter(spec: int | float | tuple | list, generator: torch.Generator):
     """Given a parameter specification, sample a value according to the specification.
 
     Parameters:
