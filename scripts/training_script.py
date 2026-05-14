@@ -141,7 +141,7 @@ elif cfg_training["model"]["name"] in ["cdl", "tv"]:
                 "weight_decay": cfg_training["training"]["weight_decay"],
             },
             {
-                "params": model.parameter_map_network._global_scaling, 
+                "params": [model.parameter_map_network._global_scaling], 
                 "lr": cfg_training["training"]["learning_rate_global_scaling"]
             },
         ]
@@ -157,8 +157,8 @@ elif cfg_training["model"]["name"] in ["cdl", "tv"]:
         
         conv_dictionary_kernel_dir = cfg_data["conv_dictionary_dir"]
         kernel_fname = Path(f"K{n_conv_dictionary_filters}_k{kernel_size}x{kernel_size}_"\
-                        f"sparsity_param{str(sparsity_param).replace(".","_")}_"\
-                        f"lowpass_param{str(lowpass_param).replace(".","_")}.pt")
+                        f"sparsity_param{str(sparsity_param).replace('.','_')}_"\
+                        f"lowpass_param{str(lowpass_param).replace('.','_')}.pt")
         conv_dictionary_kernel = torch.load(Path(conv_dictionary_kernel_dir) / kernel_fname)
         
         parameter_map_network = ConvSynthesisParameterMapNetwork2D(cnn_block = cnn_block)
@@ -170,13 +170,13 @@ elif cfg_training["model"]["name"] in ["cdl", "tv"]:
         
         params_list = [
             {
-                "params": model.parameter_map_network.cnn_block.parameters(),
+                "params": list(model.parameter_map_network.cnn_block.parameters()),
                 "lr": cfg_training["training"]["learning_rate"],
                 "weight_decay": cfg_training["training"]["weight_decay"],
             },
             {
-                "params": model.parameter_map_network._global_scaling, 
-                "lr": cfg_training["training"]["learning_rate_global_scaling"]
+                "params": [model._low_pass_filtering_parameter], 
+                "lr": cfg_training["training"]["learning_rate_low_pass_param"]
             },
         ]
         
@@ -184,28 +184,24 @@ elif cfg_training["model"]["name"] in ["cdl", "tv"]:
             f"n_convs_per_stage{n_convs_per_stage}_n_filters{n_filters}_"\
             f"n_conv_dictionary_filters{n_conv_dictionary_filters}_conv_kernel_size{kernel_size}"
 else:
-    raise ValueError(f"Model name should be either 'modl', 'cdl', or 'tv', but got{cfg_training["model"]["name"]}")
+    raise ValueError(f"Model name should be either 'modl', 'cdl', or 'tv', but got{cfg_training['model']['name']}")
 
 
 optimizer = torch.optim.Adam(params=params_list)
-
-# collect all hyperparameters defining the experiment
-config_file = {
-        name: value
-        for name, value in locals().items()
-        if isinstance(value, (int, float, tuple, str, bool))
-    }
-
 
 run_dir_name = Path(f"{cfg_training["model"]["name"]}")
 run_dir = Path("runs") / run_dir_name  / hyperparameters_identification
 run_dir.mkdir(parents=True, exist_ok=True)
 
 experiment_name = f"{cfg_training["model"]["name"]}_{hyperparameters_identification}"
-wandb_config = {"project": "AdaptiveL1",
-                "experiment_name": experiment_name,
-                "config": config_file,
+
+# collect all hyperparameters defining the experiment
+config = {
+        name: value
+        for name, value in locals().items()
+        if isinstance(value, (int, float, tuple, str, bool))
     }
+
 model = train_model(
     model = model, 
     training_loader=training_loader, 
@@ -215,5 +211,5 @@ model = train_model(
     device = device,
     n_epochs=cfg_training["training"]["n_epochs"],
     run_dir=run_dir,
-    wandb_config=wandb_config
+    config=config
 )

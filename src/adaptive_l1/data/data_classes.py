@@ -73,6 +73,8 @@ class LowFieldMRDataset(torch.utils.data.Dataset):
         kdata_noisy, adjoint = generate_kspace_data_and_adjoint(
             image, mask_operator, noise_variance, generator
         )
+        
+        kdata_noisy, adjoint, image = normalize_kspace_data_and_images(kdata_noisy, adjoint, image)
 
         return {
             "kdata": kdata_noisy.squeeze(0), #remove unnecessary batch dimension
@@ -80,7 +82,6 @@ class LowFieldMRDataset(torch.utils.data.Dataset):
             "mask": mask_operator.mask.squeeze(0),
             "target": image.squeeze(0),
         }
-
 
 def sample_parameter(spec: int | float | tuple | list, generator: torch.Generator):
     """Given a parameter specification, sample a value according to the specification.
@@ -187,6 +188,20 @@ def add_kdata_noise(
 
     return kdata
 
+def normalize_kspace_data_and_images(
+    kdata: torch.Tensor,
+    adjoint: torch.Tensor | None,
+    target: torch.Tensor | None,
+) -> tuple[torch.Tensor, torch.Tensor | None, torch.Tensor | None]:
+    """Normalize k-space data and (possibly) adjoint and target images."""
+    factor = 1.0 / kdata.abs().std()
+    kdata *= factor
+    if adjoint is not None:
+        adjoint *= factor
+    if target is not None:
+        target *= factor
+    return kdata, adjoint, target
+
 def generate_kspace_data_and_adjoint(
     image: torch.Tensor,
     mask_operator: mrpro.operators.CartesianMaskingOp,
@@ -208,17 +223,19 @@ def generate_kspace_data_and_adjoint(
     fourier_operator = mrpro.operators.FastFourierOp(dim=(-2, -1)).to(image.device)
 
     (kdata_full,) = fourier_operator(image)
-
-    n_samples = torch.prod(torch.tensor(kdata_full.shape[1:]))
-    noise_variance_effective = noise_variance * (kdata_full.abs().pow(2).sum(
-        dim=(-2, -1), keepdim=True)
-     / n_samples).pow(0.5)
+    
+    signal_rms = kdata_full.abs().pow(2).mean(
+        dim=(-2, -1), keepdim=True
+    ).sqrt()
+    
+    noise_variance = noise_variance * signal_rms.square()
     
     (kdata,) = mask_operator(kdata_full)
 
     kdata_noisy = add_kdata_noise(
-        kdata, mask_operator, noise_variance_effective, generator
+        kdata, mask_operator, noise_variance, generator
     )
+    
     forward_operator = mask_operator @ fourier_operator
 
     (adjoint,) = forward_operator.H(kdata_noisy)

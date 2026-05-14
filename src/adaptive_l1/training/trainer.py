@@ -1,7 +1,21 @@
 import mrpro
 import torch
-
 from tqdm import tqdm
+import itertools
+
+
+def forward_pass(model, batch, device):
+
+    kdata = batch["kdata"].to(device)
+    adjoint = batch["adjoint"].to(device)
+    mask = batch["mask"].to(device)
+    target = batch["target"].to(device)
+
+    mask_operator = mrpro.operators.CartesianMaskingOp(mask)
+
+    recon = model(adjoint, kdata, mask_operator)
+
+    return recon, target
 
 
 def train_model(
@@ -56,19 +70,12 @@ def train_model(
             leave=False,
             disable=False,
         ):
-            kdata = batch["kdata"].to(device)
-            adjoint = batch["adjoint"].to(device)
-            mask = batch["mask"].to(device)
-            target = batch["target"].to(device)
-
-            mask_operator = mrpro.operators.CartesianMaskingOp(mask)
-
-            optimizer.zero_grad()
-            recon = model(adjoint, kdata, mask_operator)
+            recon, target = forward_pass(model, batch, device)
             loss = loss_function(
                 torch.view_as_real(recon),
                 torch.view_as_real(target),
             )
+            optimizer.zero_grad(set_to_none=True)
             loss.backward()
             optimizer.step()
 
@@ -84,14 +91,7 @@ def train_model(
                 leave=False,
                 disable=False,
             ):
-                kdata = batch["kdata"].to(device)
-                adjoint = batch["adjoint"].to(device)
-                mask = batch["mask"].to(device)
-                target = batch["target"].to(device)
-
-                mask_operator = mrpro.operators.CartesianMaskingOp(mask)
-
-                recon = model(adjoint, kdata, mask_operator)
+                recon, target = forward_pass(model, batch, device)
                 loss = loss_function(
                     torch.view_as_real(recon),
                     torch.view_as_real(target),
@@ -104,12 +104,17 @@ def train_model(
             validation_loss = validation_loss_sum / validation_n_samples
 
         if use_wandb:
+            sample_id = 5  # just picked for demonstration purposes
+            batch = next(itertools.islice(validation_loader, sample_id, sample_id + 1))
+
+            recon, target = forward_pass(model, batch, device)
+
             wandb.log({"validation-loss": validation_loss}, step=epoch + 1)
             fig, ax = plt.subplots(1, 3, figsize=(1 * 15, 3 * 15))
             recons_list = [
-                adjoint.detach().cpu(),
+                batch["adjoint"].detach().cpu(),
                 recon.detach().cpu(),
-                target.detach().cpu(),
+                batch["target"].detach().cpu(),
             ]
             titles_list = ["adjoint", "recon", "target"]
             for k, (recon_, title) in enumerate(zip(recons_list, titles_list)):
