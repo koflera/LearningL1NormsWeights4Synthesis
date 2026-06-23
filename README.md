@@ -159,7 +159,7 @@ The following shows the improvement of using sparsity level maps over the scalar
 On the left, you can see 12 out of 64 sparse codes (top and middle row) together with their estimated sparsity level maps and the associated filters (third) row. The sparse codes and sparsity level maps are the first six (column one to six) and the last six (column 7 to 12) after having sorted the $`\ell_1`$-norms of the sparse codes in descending order of magnitude. On the right, you see the sorted $`\ell_1`$-norms of the sparse codes when using the best scalar sparsity parameter (orange; again, obtained by line search) and the spatially adaptive sparsity level parameter maps (blue).
 
 <p align="center">
-  <img src="images/sparsity_level_maps.png" width="75%">
+  <img src="images/sparsity_level_maps.png" width="70%">
   <img src="images/l1_norms.png" width="210">
 </p>
 
