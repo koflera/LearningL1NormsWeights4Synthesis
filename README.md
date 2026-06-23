@@ -164,7 +164,7 @@ On the left, you can see 12 out of 64 sparse codes (top and middle row) together
 </p>
 
 ### Comparison with TV-$`\boldsymbol{\Lambda}`$ and MoDL
-Here, you can see a figure comparing the proposed CDL-$`\boldsymbol{\Lambda}`$ with TV-$`\boldsymbol{\Lambda}`$ and MoDL. The first figure shows a comparison on an image of the test set of the fastMRI data that was used for training. The second figure shows the application of the methods to in-vivo data. More precisely, to T2-weighted image obtained using a OSI$`^2`$ Low Field MR scanner operating at 50 mT. Although MoDL surpasses both TV-$`\boldsymbol{\Lambda}`$ and CDL-$`\boldsymbol{\Lambda}`$ on the fastMRI dataset, on this (somewhat out of distributio data), it qualitatively clearly performs worse by entirely smoothing out some regions.
+Here, you can see a figure comparing the proposed CDL-$`\boldsymbol{\Lambda}`$ with TV-$`\boldsymbol{\Lambda}`$ and MoDL. The first figure shows a comparison on an image of the test set of the fastMRI data that was used for training. The second figure shows the application of the methods to in-vivo data. More precisely, to T2-weighted image obtained using a OSI$`^2`$ One Low Field MR scanner (see https://www.opensourceimaging.org/project/osii-one/) operating at 50 mT. Although MoDL surpasses both TV-$`\boldsymbol{\Lambda}`$ and CDL-$`\boldsymbol{\Lambda}`$ on the fastMRI dataset, on this (somewhat out of distributio data), it qualitatively clearly performs worse by entirely smoothing out some regions.
 
 
 <img src="images/models_comparison.png" width="120%"/>
